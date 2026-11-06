@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#009292">
+    <title>Prompt Express | รายชื่อลูกค้า</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="site-header">
+        <a class="brand" href="#" aria-label="Prompt Express หน้าหลัก">
+            <span class="brand-prompt">Prompt</span>
+            <span class="brand-express">Express</span>
+        </a>
+        <p class="header-caption">จัดการรายชื่อลูกค้าของคุณ</p>
+    </header>
+
+    <main class="page-content">
+        <section class="login-panel" id="login-panel" aria-labelledby="login-title">
+            <p class="eyebrow">PROMPT EXPRESS</p>
+            <h1 id="login-title">เข้าสู่ระบบ</h1>
+            <p class="panel-description">สำหรับพนักงานและผู้ดูแลระบบ</p>
+            <form class="login-form" id="login-form">
+                <label for="login-email">อีเมล</label>
+                <input type="email" id="login-email" autocomplete="username" placeholder="name@example.com" required>
+                <label for="login-password">รหัสผ่าน</label>
+                <input type="password" id="login-password" autocomplete="current-password" required>
+                <button class="primary-button" id="login-button" type="submit">เข้าสู่ระบบ</button>
+            </form>
+            <p class="app-message" id="login-message" role="status" aria-live="polite"></p>
+        </section>
+
+        <section class="workspace" id="workspace" hidden>
+            <div class="workspace-bar">
+                <div>
+                    <p class="eyebrow">CUSTOMER BOOK</p>
+                    <h1>รายชื่อลูกค้า</h1>
+                    <p class="panel-description">บันทึกและค้นหาข้อมูลลูกค้าของทีม</p>
+                </div>
+                <div class="account-actions">
+                    <span class="account-label" id="account-label"></span>
+                    <button class="secondary-button" id="logout-button" type="button">ออกจากระบบ</button>
+                </div>
+            </div>
+
+            <section class="customer-panel" aria-label="จัดการรายชื่อลูกค้า">
+                <div class="panel-heading">
+                    <h2>เพิ่มรายชื่อลูกค้า</h2>
+                    <span class="customer-count" id="customer-count" aria-live="polite">กำลังโหลด...</span>
+                </div>
+                <form class="customer-form" id="customer-form">
+                    <label for="customer-name">ชื่อลูกค้า</label>
+                    <div class="form-controls">
+                        <input
+                            type="text"
+                            name="name"
+                            id="customer-name"
+                            placeholder="กรอกชื่อลูกค้า"
+                            maxlength="120"
+                            autocomplete="name"
+                            required
+                        >
+                        <button class="primary-button" id="save-customer" type="submit">เพิ่มลูกค้า</button>
+                    </div>
+                </form>
+                <p class="app-message" id="customer-message" role="status" aria-live="polite"></p>
+
+                <div class="list-heading">
+                    <h2>ลูกค้าทั้งหมด</h2>
+                    <label class="search-box" for="customer-search">
+                        <span aria-hidden="true">⌕</span>
+                        <input
+                            type="search"
+                            id="customer-search"
+                            placeholder="ค้นหาชื่อลูกค้า..."
+                            autocomplete="off"
+                        >
+                    </label>
+                </div>
+                <ul class="customer-list" id="customer-list" aria-live="polite">
+                    <li class="list-placeholder">กำลังเชื่อมต่อฐานข้อมูล...</li>
+                </ul>
+            </section>
+
+            <section class="admin-panel" id="admin-panel" aria-labelledby="admin-title" hidden>
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">ADMIN ONLY</p>
+                        <h2 id="admin-title">จัดการบัญชีพนักงาน</h2>
+                        <p class="panel-description">สร้างบัญชีและกำหนดสิทธิ์ผู้ดูแลระบบ</p>
+                    </div>
+                </div>
+                <form class="employee-form" id="employee-form">
+                    <div class="employee-fields">
+                        <label>
+                            อีเมลพนักงาน
+                            <input type="email" id="employee-email" autocomplete="off" placeholder="staff@example.com" required>
+                        </label>
+                        <label>
+                            รหัสผ่านเริ่มต้น
+                            <input type="password" id="employee-password" autocomplete="new-password" minlength="6" required>
+                        </label>
+                    </div>
+                    <button class="primary-button" id="create-employee" type="submit">สร้างบัญชีพนักงาน</button>
+                </form>
+                <p class="app-message" id="admin-message" role="status" aria-live="polite"></p>
+                <h3 class="employee-list-title">บัญชีในระบบ</h3>
+                <ul class="employee-list" id="employee-list" aria-live="polite">
+                    <li class="list-placeholder">กำลังโหลดบัญชี...</li>
+                </ul>
+            </section>
+        </section>
+
+        <p class="privacy-note">เชื่อมต่อกับ Firebase Firestore และกำหนดสิทธิ์ตามบัญชีผู้ใช้</p>
+    </main>
+
+    <script type="module" src="script.js"></script>
+</body>
+
+</html>
