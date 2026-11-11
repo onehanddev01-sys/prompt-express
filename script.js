@@ -10,6 +10,7 @@ import {
 import {
     addDoc,
     collection,
+    deleteDoc,
     doc,
     getDoc,
     getFirestore,
@@ -34,13 +35,18 @@ const loginForm = document.querySelector("#login-form");
 const loginEmail = document.querySelector("#login-email");
 const loginPassword = document.querySelector("#login-password");
 const loginButton = document.querySelector("#login-button");
-const loginMessage = document.querySelector("#login-message");
+const loginMezssage = document.querySelector("#login-message");
 const workspace = document.querySelector("#workspace");
 const accountLabel = document.querySelector("#account-label");
 const logoutButton = document.querySelector("#logout-button");
 const customerForm = document.querySelector("#customer-form");
 const customerNameInput = document.querySelector("#customer-name");
+const customerPhoneInput = document.querySelector("#customer-phone");
+const customerContactInput = document.querySelector("#customer-contact");
+const customerAddressInput = document.querySelector("#customer-address");
+const customerFormTitle = document.querySelector("#customer-form-title");
 const saveCustomerButton = document.querySelector("#save-customer");
+const cancelCustomerEditButton = document.querySelector("#cancel-customer-edit");
 const searchInput = document.querySelector("#customer-search");
 const customerList = document.querySelector("#customer-list");
 const customerCount = document.querySelector("#customer-count");
@@ -56,6 +62,8 @@ const employeeList = document.querySelector("#employee-list");
 let auth;
 let database;
 let customers = [];
+let currentRole = "";
+let editingCustomerId = null;
 let stopWatchingCustomers;
 let stopWatchingEmployees;
 
@@ -67,7 +75,8 @@ function showMessage(element, message, kind = "info") {
 function renderCustomers() {
     const searchTerm = searchInput.value.trim().toLocaleLowerCase("th");
     const filteredCustomers = customers.filter((customer) =>
-        customer.name.toLocaleLowerCase("th").includes(searchTerm)
+        [customer.name, customer.phone, customer.customerName, customer.address]
+            .some((value) => typeof value === "string" && value.toLocaleLowerCase("th").includes(searchTerm))
     );
 
     customerCount.textContent = `${customers.length} รายชื่อ`;
@@ -92,13 +101,72 @@ function renderCustomers() {
         avatar.setAttribute("aria-hidden", "true");
         avatar.textContent = customer.name.trim().charAt(0).toLocaleUpperCase("th");
 
+        const details = document.createElement("div");
+        details.className = "customer-info";
+
         const name = document.createElement("span");
         name.className = "customer-name";
         name.textContent = customer.name;
 
-        item.append(avatar, name);
+        const contact = document.createElement("span");
+        contact.className = "customer-detail";
+        contact.textContent = `ผู้ติดต่อ: ${customer.customerName || "-"} · โทร: ${customer.phone || "-"}`;
+
+        const address = document.createElement("span");
+        address.className = "customer-detail";
+        address.textContent = `ที่อยู่: ${customer.address || "-"}`;
+        details.append(name, contact, address);
+
+        const actions = document.createElement("div");
+        actions.className = "customer-actions";
+
+        const editButton = document.createElement("button");
+        editButton.className = "role-button";
+        editButton.type = "button";
+        editButton.dataset.customerAction = "edit";
+        editButton.dataset.customerId = customer.id;
+        editButton.textContent = "แก้ไข";
+        editButton.setAttribute("aria-label", `แก้ไขข้อมูล ${customer.name}`);
+        actions.append(editButton);
+
+        if (currentRole === "admin") {
+            const deleteButton = document.createElement("button");
+            deleteButton.className = "danger-button";
+            deleteButton.type = "button";
+            deleteButton.dataset.customerAction = "delete";
+            deleteButton.dataset.customerId = customer.id;
+            deleteButton.textContent = "ลบ";
+            deleteButton.setAttribute("aria-label", `ลบข้อมูล ${customer.name}`);
+            actions.append(deleteButton);
+        }
+
+        item.append(avatar, details, actions);
         customerList.append(item);
     }
+}
+
+function resetCustomerForm() {
+    customerForm.reset();
+    for (const input of [customerNameInput, customerPhoneInput, customerContactInput, customerAddressInput]) {
+        input.setCustomValidity("");
+    }
+    editingCustomerId = null;
+    customerFormTitle.textContent = "เพิ่มข้อมูลร้าน";
+    saveCustomerButton.textContent = "เพิ่มข้อมูลร้าน";
+    cancelCustomerEditButton.hidden = true;
+}
+
+function startCustomerEdit(customer) {
+    editingCustomerId = customer.id;
+    customerNameInput.value = customer.name;
+    customerPhoneInput.value = customer.phone || "";
+    customerContactInput.value = customer.customerName || "";
+    customerAddressInput.value = customer.address || "";
+    customerFormTitle.textContent = "แก้ไขข้อมูลร้าน";
+    saveCustomerButton.textContent = "บันทึกการแก้ไข";
+    cancelCustomerEditButton.hidden = false;
+    customerNameInput.focus();
+    customerForm.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
 function renderEmployees(snapshot, currentUserId) {
@@ -181,7 +249,7 @@ function startWorkspaceListeners(user, role) {
             customers = snapshot.docs
                 .map((customerDocument) => ({
                     id: customerDocument.id,
-                    name: customerDocument.data().name
+                    ...customerDocument.data()
                 }))
                 .filter((customer) => typeof customer.name === "string")
                 .sort((first, second) => first.name.localeCompare(second.name, "th"));
@@ -254,6 +322,8 @@ if (Object.values(firebaseConfig).some((value) => !value.trim() || value.startsW
     onAuthStateChanged(auth, async (user) => {
         stopWorkspaceListeners();
         customers = [];
+        currentRole = "";
+        resetCustomerForm();
         workspace.hidden = true;
         loginPanel.hidden = !user;
 
@@ -274,6 +344,7 @@ if (Object.values(firebaseConfig).some((value) => !value.trim() || value.startsW
             }
 
             accountLabel.textContent = `${user.email || ""} · ${role === "admin" ? "แอดมิน" : "พนักงาน"}`;
+            currentRole = role;
             adminPanel.hidden = role !== "admin";
             workspace.hidden = false;
             loginPanel.hidden = true;
@@ -287,39 +358,96 @@ if (Object.values(firebaseConfig).some((value) => !value.trim() || value.startsW
 
     customerForm.addEventListener("submit", async (event) => {
         event.preventDefault();
-        const name = customerNameInput.value.trim();
+        const customerData = {
+            name: customerNameInput.value.trim(),
+            phone: customerPhoneInput.value.trim(),
+            customerName: customerContactInput.value.trim(),
+            address: customerAddressInput.value.trim()
+        };
+        const emptyField = [
+            [customerNameInput, customerData.name, "กรุณากรอกชื่อร้าน"],
+            [customerPhoneInput, customerData.phone, "กรุณากรอกเบอร์โทรศัพท์"],
+            [customerContactInput, customerData.customerName, "กรุณากรอกชื่อลูกค้าหรือผู้ติดต่อ"],
+            [customerAddressInput, customerData.address, "กรุณากรอกที่อยู่ลูกค้า"]
+        ].find(([, value]) => !value);
 
-        if (!name) {
-            customerNameInput.setCustomValidity("กรุณากรอกชื่อลูกค้า");
-            customerNameInput.reportValidity();
+        if (emptyField) {
+            const [input, , message] = emptyField;
+            input.setCustomValidity(message);
+            input.reportValidity();
             return;
         }
-        customerNameInput.setCustomValidity("");
+        for (const input of [customerNameInput, customerPhoneInput, customerContactInput, customerAddressInput]) {
+            input.setCustomValidity("");
+        }
 
         saveCustomerButton.disabled = true;
         showMessage(customerMessage, "กำลังบันทึก...");
 
         try {
-            await addDoc(collection(database, "customers"), {
-                name,
-                createdAt: serverTimestamp(),
-                createdBy: auth.currentUser.uid
-            });
-            customerForm.reset();
-            customerNameInput.focus();
-            showMessage(customerMessage, "เพิ่มรายชื่อลูกค้าเรียบร้อยแล้ว");
+            if (editingCustomerId) {
+                await updateDoc(doc(database, "customers", editingCustomerId), customerData);
+                resetCustomerForm();
+                showMessage(customerMessage, "แก้ไขข้อมูลร้านเรียบร้อยแล้ว");
+            } else {
+                await addDoc(collection(database, "customers"), {
+                    ...customerData,
+                    createdAt: serverTimestamp(),
+                    createdBy: auth.currentUser.uid
+                });
+                resetCustomerForm();
+                customerNameInput.focus();
+                showMessage(customerMessage, "เพิ่มข้อมูลร้านเรียบร้อยแล้ว");
+            }
         } catch (error) {
-            console.error("Unable to save customer.", error);
+            console.error("Unable to save customer changes.", error);
             showMessage(customerMessage, "บันทึกไม่สำเร็จ กรุณาตรวจสอบสิทธิ์ฐานข้อมูลแล้วลองอีกครั้ง", "error");
         } finally {
             saveCustomerButton.disabled = false;
         }
     });
 
-    customerNameInput.addEventListener("input", () => {
-        customerNameInput.setCustomValidity("");
+    customerForm.addEventListener("input", (event) => {
+        event.target.setCustomValidity("");
     });
+    cancelCustomerEditButton.addEventListener("click", resetCustomerForm);
     searchInput.addEventListener("input", renderCustomers);
+
+    customerList.addEventListener("click", async (event) => {
+        const button = event.target.closest("button[data-customer-action]");
+        if (!button) {
+            return;
+        }
+
+        const customer = customers.find((entry) => entry.id === button.dataset.customerId);
+        if (!customer) {
+            return;
+        }
+
+        if (button.dataset.customerAction === "edit") {
+            startCustomerEdit(customer);
+            return;
+        }
+
+        if (button.dataset.customerAction !== "delete" || currentRole !== "admin") {
+            return;
+        }
+
+        if (!window.confirm(`ยืนยันการลบข้อมูลร้าน "${customer.name}" หรือไม่?`)) {
+            return;
+        }
+
+        button.disabled = true;
+        try {
+            await deleteDoc(doc(database, "customers", customer.id));
+            showMessage(customerMessage, "ลบข้อมูลร้านเรียบร้อยแล้ว");
+        } catch (error) {
+            console.error("Unable to delete customer.", error);
+            showMessage(customerMessage, "ลบข้อมูลไม่สำเร็จ กรุณาตรวจสอบสิทธิ์แอดมินและ Firestore Rules", "error");
+        } finally {
+            button.disabled = false;
+        }
+    });
 
     employeeForm.addEventListener("submit", async (event) => {
         event.preventDefault();

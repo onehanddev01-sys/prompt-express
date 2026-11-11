@@ -12,6 +12,23 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
+    function validCustomer(data) {
+      return data.keys().hasOnly(['name', 'phone', 'customerName', 'address', 'createdAt', 'createdBy'])
+        && data.keys().hasAll(['name', 'phone', 'customerName', 'address', 'createdAt', 'createdBy'])
+        && data.name is string
+        && data.name.size() > 0
+        && data.name.size() <= 120
+        && data.phone is string
+        && data.phone.size() > 0
+        && data.phone.size() <= 40
+        && data.customerName is string
+        && data.customerName.size() > 0
+        && data.customerName.size() <= 120
+        && data.address is string
+        && data.address.size() > 0
+        && data.address.size() <= 300;
+    }
+
     match /users/{userId} {
       allow read: if isAdmin() || (request.auth != null && request.auth.uid == userId);
       allow create: if isAdmin()
@@ -31,14 +48,14 @@ service cloud.firestore {
     match /customers/{customerId} {
       allow read: if hasAccount();
       allow create: if hasAccount()
-        && request.resource.data.keys().hasOnly(['name', 'createdAt', 'createdBy'])
-        && request.resource.data.keys().hasAll(['name', 'createdAt', 'createdBy'])
-        && request.resource.data.name is string
-        && request.resource.data.name.size() > 0
-        && request.resource.data.name.size() <= 120
+        && validCustomer(request.resource.data)
         && request.resource.data.createdAt == request.time
         && request.resource.data.createdBy == request.auth.uid;
-      allow update, delete: if false;
+      allow update: if hasAccount()
+        && validCustomer(request.resource.data)
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.createdBy == resource.data.createdBy;
+      allow delete: if isAdmin();
     }
   }
 }

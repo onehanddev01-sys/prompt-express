@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#009292">
-    <title>Prompt Express | รายชื่อลูกค้า</title>
+    <title>Prompt Express</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -48,22 +48,38 @@
 
             <section class="customer-panel" aria-label="จัดการรายชื่อลูกค้า">
                 <div class="panel-heading">
-                    <h2>เพิ่มรายชื่อลูกค้า</h2>
+                    <div>
+                        <h2 id="customer-form-title">เพิ่มข้อมูลร้าน</h2>
+                        <p class="panel-description">กรอกข้อมูลร้านและผู้ติดต่อให้ครบถ้วน</p>
+                    </div>
                     <span class="customer-count" id="customer-count" aria-live="polite">กำลังโหลด...</span>
                 </div>
                 <form class="customer-form" id="customer-form">
-                    <label for="customer-name">ชื่อลูกค้า</label>
-                    <div class="form-controls">
-                        <input
-                            type="text"
-                            name="name"
-                            id="customer-name"
-                            placeholder="กรอกชื่อลูกค้า"
-                            maxlength="120"
-                            autocomplete="name"
-                            required
-                        >
-                        <button class="primary-button" id="save-customer" type="submit">เพิ่มลูกค้า</button>
+                    <div class="customer-fields">
+                        <label>
+                            ชื่อร้าน
+                            <input type="text" name="name" id="customer-name" placeholder="กรอกชื่อร้าน"
+                                maxlength="120" autocomplete="organization" required>
+                        </label>
+                        <label>
+                            เบอร์โทรศัพท์
+                            <input type="tel" name="phone" id="customer-phone" placeholder="กรอกเบอร์โทรศัพท์"
+                                maxlength="40" autocomplete="tel" required>
+                        </label>
+                        <label>
+                            ชื่อลูกค้า / ผู้ติดต่อ
+                            <input type="text" name="customerName" id="customer-contact"
+                                placeholder="กรอกชื่อลูกค้าหรือผู้ติดต่อ" maxlength="120" autocomplete="name" required>
+                        </label>
+                        <label class="address-field">
+                            ที่อยู่ลูกค้า
+                            <textarea name="address" id="customer-address" placeholder="กรอกที่อยู่ลูกค้า"
+                                maxlength="300" autocomplete="street-address" rows="3" required></textarea>
+                        </label>
+                    </div>
+                    <div class="customer-form-actions">
+                        <button class="primary-button" id="save-customer" type="submit">เพิ่มข้อมูลร้าน</button>
+                        <button class="secondary-button" id="cancel-customer-edit" type="button" hidden>ยกเลิก</button>
                     </div>
                 </form>
                 <p class="app-message" id="customer-message" role="status" aria-live="polite"></p>
@@ -72,12 +88,8 @@
                     <h2>ลูกค้าทั้งหมด</h2>
                     <label class="search-box" for="customer-search">
                         <span aria-hidden="true">⌕</span>
-                        <input
-                            type="search"
-                            id="customer-search"
-                            placeholder="ค้นหาชื่อลูกค้า..."
-                            autocomplete="off"
-                        >
+                        <input type="search" id="customer-search" placeholder="ค้นหาชื่อร้าน เบอร์โทร หรือผู้ติดต่อ..."
+                            autocomplete="off">
                     </label>
                 </div>
                 <ul class="customer-list" id="customer-list" aria-live="polite">
@@ -97,11 +109,13 @@
                     <div class="employee-fields">
                         <label>
                             อีเมลพนักงาน
-                            <input type="email" id="employee-email" autocomplete="off" placeholder="staff@example.com" required>
+                            <input type="email" id="employee-email" autocomplete="off" placeholder="staff@example.com"
+                                required>
                         </label>
                         <label>
                             รหัสผ่านเริ่มต้น
-                            <input type="password" id="employee-password" autocomplete="new-password" minlength="6" required>
+                            <input type="password" id="employee-password" autocomplete="new-password" minlength="6"
+                                required>
                         </label>
                     </div>
                     <button class="primary-button" id="create-employee" type="submit">สร้างบัญชีพนักงาน</button>

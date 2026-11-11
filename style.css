@@ -25,7 +25,8 @@ body {
 }
 
 button,
-input {
+input,
+textarea {
     font: inherit;
 }
 
@@ -218,23 +219,38 @@ h1 {
 }
 
 .customer-form {
-    margin-top: 30px;
+    margin-top: 22px;
 }
 
-.customer-form label {
-    display: block;
-    margin-bottom: 8px;
+.customer-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.customer-fields label {
+    display: grid;
+    gap: 7px;
     color: #344f4f;
     font-size: 14px;
     font-weight: 500;
 }
 
-.form-controls {
-    display: flex;
-    gap: 10px;
+.customer-fields input,
+.customer-fields textarea {
+    width: 100%;
+    min-width: 0;
+    padding: 11px 13px;
+    border: 1px solid #dce9e8;
+    border-radius: 9px;
+    outline: none;
+    background: #fbfefe;
+    color: #173537;
+    font: inherit;
+    font-size: 14px;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 
-.form-controls input,
 .search-box input {
     min-width: 0;
     border: 1px solid #dce9e8;
@@ -244,21 +260,31 @@ h1 {
     transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 
-.form-controls input {
-    flex: 1;
-    padding: 12px 14px;
-    border-radius: 10px;
+.customer-fields textarea {
+    resize: vertical;
 }
 
-.form-controls input::placeholder,
+.address-field {
+    grid-column: 1 / -1;
+}
+
+.customer-fields input::placeholder,
+.customer-fields textarea::placeholder,
 .search-box input::placeholder {
     color: #a0b0af;
 }
 
-.form-controls input:focus,
+.customer-fields input:focus,
+.customer-fields textarea:focus,
 .search-box:focus-within {
     border-color: #00aaa2;
     box-shadow: 0 0 0 3px rgba(0, 170, 162, 0.12);
+}
+
+.customer-form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
 }
 
 .primary-button {
@@ -355,6 +381,13 @@ h1 {
     background: #fcfefe;
 }
 
+.customer-info {
+    display: grid;
+    min-width: 0;
+    flex: 1;
+    gap: 3px;
+}
+
 .customer-avatar {
     display: grid;
     width: 38px;
@@ -371,6 +404,39 @@ h1 {
     overflow-wrap: anywhere;
     color: #294544;
     font-size: 14px;
+    font-weight: 500;
+}
+
+.customer-detail {
+    overflow-wrap: anywhere;
+    color: #718583;
+    font-size: 12px;
+}
+
+.customer-actions {
+    display: flex;
+    flex-shrink: 0;
+    gap: 7px;
+}
+
+.danger-button {
+    padding: 7px 10px;
+    border: 1px solid #f0d4d5;
+    border-radius: 8px;
+    background: #fff7f7;
+    color: #b42332;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.danger-button:hover:not(:disabled) {
+    border-color: #d98a90;
+    background: #fff0f0;
+}
+
+.danger-button:disabled {
+    cursor: wait;
+    opacity: 0.6;
 }
 
 .list-placeholder {
@@ -499,10 +565,31 @@ h1 {
         flex-direction: column;
     }
 
-    .form-controls,
     .list-heading {
         align-items: stretch;
         flex-direction: column;
+    }
+
+    .customer-fields {
+        grid-template-columns: 1fr;
+    }
+
+    .address-field {
+        grid-column: auto;
+    }
+
+    .customer-form-actions {
+        flex-direction: column;
+    }
+
+    .customer-item {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .customer-actions {
+        width: 100%;
+        justify-content: flex-end;
     }
 
     .employee-fields {
